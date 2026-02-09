@@ -8,7 +8,6 @@ from PyQt6.QtCore import Qt
 
 SCREEN_SIZE = [600, 450]
 
-
 class Example(QWidget):
     def __init__(self):
         super().__init__()
@@ -28,7 +27,6 @@ class Example(QWidget):
             'z': self.z
         }
 
-        # Готовим запрос.
         response = requests.get(server_address, params=params)
 
         if not response:
@@ -45,7 +43,6 @@ class Example(QWidget):
         self.setGeometry(100, 100, *SCREEN_SIZE)
         self.setWindowTitle('Отображение карты')
 
-        ## Изображение
         self.pixmap = QPixmap(self.map_file)
         self.image = QLabel(self)
         self.image.move(0, 0)
@@ -56,9 +53,9 @@ class Example(QWidget):
         self.pixmap = QPixmap(self.map_file)
         self.image.setPixmap(self.pixmap)
 
-
     def keyPressEvent(self, event):
         key = event.key()
+
         if key == Qt.Key.Key_PageUp:
             self.z += 1
             if self.z > self.z_max:
@@ -73,10 +70,37 @@ class Example(QWidget):
             self.getImage()
             self.updateMap()
 
+        if key == Qt.Key.Key_Up:
+            self.move_center(0, self.get_move())
+        elif key == Qt.Key.Key_Down:
+            self.move_center(0, -self.get_move())
+        elif key == Qt.Key.Key_Left:
+            self.move_center(-self.get_move(), 0)
+        elif key == Qt.Key.Key_Right:
+            self.move_center(self.get_move(), 0)
+
+    def get_move(self):
+        return 0.0001 * (2 ** (20 - self.z))
+
+    def move_center(self, delta_lon, delta_lat):
+        self.lattitude += delta_lat
+        self.longitude += delta_lon
+
+        if self.lattitude > 85:
+            self.lattitude = 85
+        elif self.lattitude < -85:
+            self.lattitude = -85
+
+        if self.longitude > 180:
+            self.longitude = 180
+        elif self.longitude < -180:
+            self.longitude = -180
+
+        self.getImage()
+        self.updateMap()
+
     def closeEvent(self, event):
-        """При закрытии формы подчищаем за собой"""
-        if os.path.exists(self.map_file):
-            os.remove(self.map_file)
+        os.remove(self.map_file)
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
