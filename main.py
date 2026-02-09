@@ -16,6 +16,7 @@ class Example(QWidget):
         self.z = 16
         self.z_min = 0
         self.z_max = 21
+        self.theme = 'light'
         self.getImage()
         self.initUI()
 
@@ -24,7 +25,8 @@ class Example(QWidget):
         params = {
             'apikey': 'f3a0fe3a-b07e-4840-a1da-06f18b2ddf13',
             'll': f'{self.longitude},{self.lattitude}',
-            'z': self.z
+            'z': self.z,
+            'theme': self.theme
         }
 
         response = requests.get(server_address, params=params)
@@ -79,8 +81,19 @@ class Example(QWidget):
         elif key == Qt.Key.Key_Right:
             self.move_center(self.get_move(), 0)
 
+        if key == Qt.Key.Key_T:
+            self.toggle_map_type()
+
     def get_move(self):
         return 0.0001 * (2 ** (20 - self.z))
+
+    def toggle_map_type(self):
+        if self.theme == 'light':
+            self.theme = 'dark'
+        else:
+            self.theme = 'light'
+        self.getImage()
+        self.updateMap()
 
     def move_center(self, delta_lon, delta_lat):
         self.lattitude += delta_lat
